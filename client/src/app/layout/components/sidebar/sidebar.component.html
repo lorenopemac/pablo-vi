@@ -1,0 +1,24 @@
+<nav class="sidebar" [ngClass]="{sidebarPushRight: isActive, collapsed: collapsed}">
+    <div class="list-group">
+        <a routerLink="/usuarios" [routerLinkActive]="['router-link-active']" class="list-group-item">
+            <i class="fa fa-fw fa-user-o"></i>&nbsp;
+            <span>Usuarios</span>
+        </a>
+        <a [routerLink]="['/escolar']" [routerLinkActive]="['router-link-active']" class="list-group-item">
+            <i class="fa fa-fw fa-book"></i>&nbsp;
+            <span>Gestión Escolar</span>
+        </a>
+        <a [routerLink]="['/notas']" [routerLinkActive]="['router-link-active']" class="list-group-item">
+            <i class="fa fa-fw fa-pencil"></i>&nbsp;
+            <span>Calificaciones</span>
+        </a>
+        <a [routerLink]="['/finanzas']" [routerLinkActive]="['router-link-active']" class="list-group-item">
+            <i class="fa fa-fw fa-money"></i>&nbsp;
+            <span>Finanzas</span>
+        </a>
+    </div>
+    <div class="toggle-button" [ngClass]="{collapsed: collapsed}" (click)="toggleCollapsed()">
+        <i class="fa fa-fw fa-angle-double-left"></i>&nbsp;
+        <span>Minimizar</span>
+    </div>
+</nav>

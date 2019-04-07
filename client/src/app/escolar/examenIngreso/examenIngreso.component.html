@@ -1,0 +1,293 @@
+<div id="page-wrapper">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class='page-header'>
+                <h2>Examenes de Ingreso</h2>
+            </div>
+        </div>
+    </div>
+    <!-- /.row -->
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="panel-body" style="padding-left: 2%;">
+                <div class="row">
+                    <div class="panel-group" id="accordion">
+                        <div class="panel panel-default">
+                            <div class="panel-heading"></div>
+                            <div class="panel-body">
+                                <!--####################################### SELECCIONAR AÑO ESCOLAR ###################################-->
+                                <label>Año Escolar: </label>
+                                <br>
+                                <p-dropdown [options]="anios" [(ngModel)]="selectedAnio" (onChange)="getCursos()"></p-dropdown>
+                                <br>
+                        
+                                <!--####################################### SELECCIONAR CURSO ###################################-->
+                                <br>
+                                <label>Curso: </label>
+                                <br>
+                                <p-dataTable [value]="cursos" 
+                                            selectionMode="single"
+                                            [(selection)]="selectedCurso"
+                                            emptyMessage="Debe seleccionar un año escolar"
+                                            *ngIf="!selectedAnio">
+                                    <p-column header="Curso"></p-column>
+                                </p-dataTable>
+                                <p-dataTable [value]="cursos"
+                                            selectionMode="single" 
+                                            [(selection)]="selectedCurso" 
+                                            (onRowSelect)="getMaterias(); getExamenes();"
+                                            *ngIf="selectedAnio">
+                                    <p-column field="nivel.nombre" header="Curso"></p-column>
+                                </p-dataTable>
+                                <br>
+
+                                <!--####################################### TABLA EXAMENES ###################################-->
+                                <div class="panel panel-default" >
+                                    <div class="panel-heading">
+                                        <label>Examenes: </label>
+                                    </div>
+                                    <div class="panel-body">
+                                        <p-dataTable [value]="examenesIngreso"
+                                                    sortField="legajo" 
+                                                    [paginator]="true"
+                                                    [rows]="10"
+                                                    [tableStyle]="{'table-layout':'auto'}"
+                                                    [immutable]="false"
+                                                    emptyMessage="Debe seleccionar un curso"
+                                                    *ngIf="!examenesIngreso">
+                                            <p-header [style]="{'width': '100%'}">
+                                                <div class="ui-helper-clearfix"><strong>Lista de Examenes</strong></div>
+                                            </p-header>
+                                            <p-column header="Fecha"></p-column>
+                                            <p-column header="Materia"></p-column>
+                                            <p-column header="Profesor"></p-column>
+                                        </p-dataTable>
+                                                                
+                                        <p-dataTable [value]="examenesIngreso"
+                                                    sortField="legajo" 
+                                                    [paginator]="true"
+                                                    [rows]="10"
+                                                    [tableStyle]="{'table-layout':'auto'}"
+                                                    [immutable]="false"
+                                                    *ngIf="examenesIngreso">
+                                            <p-header [style]="{'width': '100%'}">
+                                                <div class="ui-helper-clearfix">
+                                                    <div style="float:right;">
+                                                        <button pButton 
+                                                                class="ui-button-primario"
+                                                                id="boton" type="button"
+                                                                icon="fa fa-plus"
+                                                                label="Nuevo Examen"
+                                                                data-toggle="modal" 
+                                                                data-target="#modalAgregarExamen"
+                                                        ></button>
+                                                    </div>
+                                                    <div style="padding-left: 15%;"><strong>Lista de Examenes</strong></div>
+                                                </div>
+                                                <div class="ui-helper-clearfix">{{nivel}} {{selectedAnio}}</div>
+                                            </p-header>
+                                            <p-column field="fecha" header="Fecha">
+                                                <ng-template let-row="rowData" pTemplate="body">
+                                                    {{row.fecha | date:'dd/MM/yy'}}
+                                                </ng-template>
+                                            </p-column>
+                                            <p-column field="profesor" header="Profesor">
+                                                <ng-template let-row="rowData" pTemplate="body">
+                                                    {{formatNombreProfesor(row.profesor)}}
+                                                </ng-template>
+                                            </p-column>
+                                            <p-column field="materia.nombre" header="Materia"></p-column>
+                                        </p-dataTable>
+                                    </div>  
+                                </div>
+                                <br>
+                            </div>
+                            <div class="panel-footer">
+                                <div class="btn-group" role="group" aria-label="Basic example" style="float:right">
+                                    <div class="btn-group mr-2">
+                                        <button pButton 
+                                                class="ui-button-danger" 
+                                                icon="fa fa-times"
+                                                id="boton" type="button"
+                                                label="Salir"
+                                                (click)="goBack()"
+                                        ></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Agregar Examen -->
+<div class="modal fade" id="modalAgregarExamen" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" *ngIf="examenesIngreso">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel">Nuevo Examen de Ingreso</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            </div>
+            <form name="form" #f="ngForm" novalidate>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>Fecha de Examen: </label> <br>
+                            <input  pInputText type="text" value="{{fechaInicioGuardada}}" data-toggle="modal" data-target="#modalPickerExamen" id="inputSuccess2" autocomplete="off">
+                            <div *ngIf="!fechaExamenValida()" class="alert alert-danger" role="alert"> <strong>ERROR!</strong> El año escolar debe ser: {{selectedAnio}} </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Materia: </label>
+                            <select class="form-control" [(ngModel)] = "selectedMateria" name="selectedMateria" (change)="getProfesores()">
+                                <option [ngValue]="null"> -- seleccione una materia -- </option>
+                                <option *ngFor="let materia of materias" [ngValue]="materia" >{{materia.nombre}}</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Profesor: </label>
+                            <select class="form-control" [(ngModel)] = "selectedProfesor" name="selectedProfesor" (change)="getPostulantes()">
+                                <option [ngValue]="null"> -- seleccione un profesor -- </option>
+                                <option *ngFor="let profesor of profesores" [ngValue]="profesor" >{{profesor.nombre}} {{profesor.apellido}}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <div class="btn-group mr-2">
+                            <div *ngIf="selectedProfesor && fechaExamenValida()"> 
+                                <button pButton 
+                                        class="ui-button-warning" 
+                                        icon="fa fa-search"
+                                        id="boton" type="button"
+                                        label="Ver Postulantes"
+                                        (click)="togglePost()"
+                                        data-toggle="modal"
+                                        data-target="#modalVerPostulantes"
+                                ></button>
+                            </div>
+                            <div *ngIf="!selectedProfesor || !fechaExamenValida()">
+                                <button pButton 
+                                        disabled
+                                        icon="fa fa-search"
+                                        class="ui-button-warning" 
+                                        id="boton" type="button"
+                                        label="Ver Postulantes" 
+                                ></button>
+                            </div>
+                        </div>
+                        <div class="btn-group mr-2">
+                            <div *ngIf="selectedProfesor && fechaInicioGuardada && fechaExamenValida()"> 
+                                <button pButton 
+                                        class="ui-button-success" 
+                                        id="boton" type="button"
+                                        icon="fa fa-plus"
+                                        label="Guardar Examen de Ingreso"
+                                        (click)="guardarExamen(f)"
+                                        data-dismiss="modal"
+                                ></button>
+                            </div>
+                            <div *ngIf="!selectedProfesor || !fechaInicioGuardada || !fechaExamenValida()">
+                                <button pButton 
+                                        disabled 
+                                        class="ui-button-success" 
+                                        id="boton" type="button"
+                                        icon="fa fa-plus"
+                                        label="Guardar Examen de Ingreso"
+                                ></button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<!-- Fin Modal Agregar Examen -->
+
+<!-- Modal Ver Postulantes -->
+<div class="modal fade" id="modalVerPostulantes" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" *ngIf="selectedProfesor">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel">Postulantes</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p-dataTable [value]="postulantes"
+                            [paginator]="true"
+                            [rows]="10"
+                            [tableStyle]="{'table-layout':'auto'}"
+                            [immutable]="false">
+                    <p-column field="nombre" header="Nombre"></p-column>
+                    <p-column field="apellido" header="Apellido"></p-column>
+                </p-dataTable>
+            </div>
+            <div class="modal-footer">
+                <button pButton 
+                        class="ui-button-success" 
+                        icon="fa fa-check"
+                        id="boton" type="button"
+                        label="Ok"
+                        data-dismiss="modal"
+                ></button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal Ver Postulantes -->
+
+<!-- Modal datePicker Inicio -->
+<div class="modal fade" id="modalPickerExamen" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="myModalLabel">Fecha Examen</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="">
+                        <div>
+                            <p>La fecha actual seleccionada es: <span *ngIf="currentFechaInicio">{{ getFechaInicio() | date:'dd/MM/yy'}}</span></p>
+                            <div style="width: 350px;">
+                                <datepicker [(ngModel)]="currentFechaInicio" [showWeeks]="false"></datepicker>
+                            </div>
+
+
+                        </div>
+
+                        <style>
+                        .full button span {
+                            background-color: limegreen;
+                            border-radius: 32px;
+                            color: black;
+                        }
+                        .partially button span {
+                            background-color: orange;
+                            border-radius: 32px;
+                            color: black;
+                        }
+                        </style>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button pButton
+                            class="ui-button-success"
+                            icon="fa fa-check"
+                            label="Aceptar Fecha"
+                            data-dismiss="modal"
+                            (click)="addFechaInicio();">
+                    </button>
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+
+    </div>
+    <!-- /.modal -->
+
+    

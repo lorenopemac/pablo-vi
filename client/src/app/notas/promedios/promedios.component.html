@@ -1,0 +1,86 @@
+<div class="panel panel-default">
+    <h4>Mejor Promedio</h4>
+    <!--####################################### SELECCIONAR AÑO ESCOLAR ###################################-->
+    <label>Año Escolar: </label>
+    <br>
+    <p-dropdown [options]="anios" [(ngModel)]="selectedAnio" (onChange)="getCursos()"></p-dropdown>
+    <br>
+
+    <!--####################################### SELECCIONAR NIVEL ESCOLAR ###################################-->
+    <br>    
+    <label>Curso: </label>
+        <br>
+        <p-dataTable [value]="cursos" selectionMode="single" [(selection)]="selectedCurso"
+                    [sortableRowGroup]="false"
+                    (onRowSelect)="getAlumnos()"
+                    emptyMessage="Debe seleccionar un año escolar"
+                    *ngIf="!cursos">
+            <p-header [style]="{'width': '100%'}">
+                <div class="ui-helper-clearfix"><strong>Lista de Cursos</strong></div>
+            </p-header>
+            <p-column field="division.nombre" header="Division"></p-column>
+        </p-dataTable>
+        <p-dataTable [value]="cursos" selectionMode="single" [(selection)]="selectedCurso" 
+                    rowGroupMode="subheader" 
+                    groupField="nivel.nombre" expandableRowGroups="true"
+                    [sortableRowGroup]="false"
+                    (onRowSelect)="getAlumnos()"
+                    *ngIf="cursos">
+            <p-header [style]="{'width': '100%'}">
+                <div class="ui-helper-clearfix"><strong>Lista de Cursos</strong></div>
+            </p-header>
+            <ng-template pTemplate="rowgroupheader" let-rowData>{{rowData.nivel.nombre}}</ng-template>
+            <p-column field="division" header="Division"></p-column>
+        </p-dataTable>
+    <br>
+    
+    <label>Tabla de Promedios: </label>
+    <br>
+    <p-dataTable [value]="alumnos"
+                sortField="legajo" 
+                [paginator]="true"
+                [rows]="10"
+                [tableStyle]="{'table-layout':'auto'}"
+                [immutable]="false"
+                emptyMessage="Debe seleccionar un curso"
+                *ngIf="!alumnos">
+        <p-header [style]="{'width': '100%'}">
+            <div class="ui-helper-clearfix"><strong>Lista de Promedios</strong></div>
+        </p-header>
+        <p-column field="legajo" header="Legajo" [filter]="true" filterPlaceholder="Buscar" filterMatchMode="contains"></p-column>
+        <p-column field="nombre" header="Nombre" [filter]="true" filterPlaceholder="Buscar" filterMatchMode="contains"></p-column>
+        <p-column field="apellido" header="Apellido" [filter]="true" filterPlaceholder="Buscar" filterMatchMode="contains"></p-column>
+        <p-column field="promedio" header="Promedio Total"></p-column>
+    </p-dataTable>
+    <p-dataTable [value]="alumnos"
+                sortField="promedio" sortOrder="-1"
+                [paginator]="true"
+                [rows]="10"
+                [tableStyle]="{'table-layout':'auto'}"
+                [immutable]="false"
+                emptyMessage="No hay alumnos"
+                *ngIf="alumnos">
+        <p-header [style]="{'width': '100%'}">
+            <div class="ui-helper-clearfix"><strong>Lista de Alumnos</strong></div>
+            <div class="ui-helper-clearfix"><strong>Curso: </strong>{{nivel}} {{division}} {{selectedAnio}}</div>
+        </p-header>
+        <p-column field="legajo" header="Legajo" [filter]="true" filterPlaceholder="Buscar" filterMatchMode="contains"></p-column>
+        <p-column field="nombre" header="Nombre" [filter]="true" filterPlaceholder="Buscar" filterMatchMode="contains"></p-column>
+        <p-column field="apellido" header="Apellido" [filter]="true" filterPlaceholder="Buscar" filterMatchMode="contains"></p-column>
+        <p-column field="promedio" header="Promedio Total"></p-column>
+    </p-dataTable>
+    <br>
+    <div class="btn-group" role="group" aria-label="Basic example" style="float: right;">
+        <div class="btn-group mr-2">
+            <button
+                pButton
+                icon="fa fa-times"
+                class="ui-button-danger"
+                type="button"
+                label="Salir"
+                (click)="goBack()"
+            >
+            </button>
+        </div>
+    </div>
+</div>

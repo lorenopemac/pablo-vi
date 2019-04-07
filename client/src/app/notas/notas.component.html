@@ -1,0 +1,27 @@
+<div [@routerTransition]>
+        <div style="text-align: center">
+                <a [routerLink]="['/notas/cargarNotasCurso']" [routerLinkActive]="['router-link-active']" class="">
+                <button pButton 
+                        class="ui-button-rounded ui-button-primario" 
+                        icon="fa fa-users" 
+                        label="Cargar Calificaciones de Curso">                      
+                </button>
+                </a>
+                <br><br>
+                <a [routerLink]="['/notas/cargarNotasIngreso']" [routerLinkActive]="['router-link-active']" class="">
+                <button pButton 
+                        class="ui-button-rounded ui-button-primario"
+                        icon="fa fa-user-plus" 
+                        label="Cargar Calificaciones de Examenes de Ingreso">
+                </button>
+                </a>
+                <br><br>
+                <a [routerLink]="['/notas/promedios']" [routerLinkActive]="['router-link-active']" class="">
+                <button pButton 
+                        class="ui-button-rounded ui-button-primario"
+                        icon="fa fa-star" 
+                        label="Mejor Promedio de Curso">
+                </button>
+                </a>
+        </div>
+</div>

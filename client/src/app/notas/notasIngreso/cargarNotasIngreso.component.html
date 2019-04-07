@@ -1,0 +1,197 @@
+<div class="panel panel-default">
+    <h4>Cargar Calificaciones de Examenes de Ingreso</h4>
+    <!--####################################### SELECCIONAR AÑO ESCOLAR ###################################-->
+    <div>
+        <label>Año Escolar: </label>
+        <br>
+        <p-dropdown [options]="anios" [(ngModel)]="selectedAnio" (onChange)="getCursos()"></p-dropdown>
+    </div>
+    <br>
+    <!--####################################### SELECCIONAR CURSO ###################################-->
+    <div *ngIf="cursos==null">
+        <label>Seleccione un curso: </label>
+        <br>
+        <p-dataTable [value]="cursos" 
+                    selectionMode="single" 
+                    [(selection)]="selectedCurso" 
+                    emptyMessage="Debe seleccionar un año escolar.">
+            <p-column header="Cursos"></p-column>
+        </p-dataTable>
+    </div>
+    <div *ngIf="cursos!=null">
+        <label>Seleccione un curso: </label>
+        <br>
+        <p-dataTable [value]="cursos" 
+                    selectionMode="single" 
+                    [(selection)]="selectedCurso" 
+                    (onRowSelect)="getExamenes()">
+            <p-column field="nivel.nombre" header="Cursos"></p-column>
+        </p-dataTable>
+    </div>
+    <br>
+    <!--####################################### SELECCIONAR EXAMEN ###################################-->
+    <div *ngIf="examenes==null">
+        <label>Exámenes: </label>
+        <br>
+        <p-dataTable [value]="examenes" 
+                    emptyMessage="Debe seleccionar un curso.">
+            <p-column header="Fecha"></p-column>
+            <p-column header="Profesor"></p-column>
+            <p-column header="Materia"></p-column>
+        </p-dataTable>
+    </div>
+    <div *ngIf="examenes!=null">
+        <label>Exámenes: </label>
+        <br>
+        <p-dataTable [value]="examenes" selectionMode="single" [(selection)]="selectedExamen"
+                    emptyMessage="No hay Examenes de Ingreso." 
+                    (onRowSelect)="getIngresantes()">
+            <p-column field="fecha" header="Fecha">
+                <ng-template let-row="rowData" pTemplate="body">
+                    {{row.fecha | date:'dd/MM/yy'}}
+                </ng-template>
+            </p-column>
+            <p-column field="profesor" header="Profesor">
+                <ng-template let-row="rowData" pTemplate="body">
+                    {{formatNombreProfesor(row.profesor)}}
+                </ng-template>
+            </p-column>
+            <p-column field="materia.nombre" header="Materia"></p-column>
+        </p-dataTable>
+    </div>
+    <br>
+    <p-dataTable
+        [value]="alumnos"
+        sortField="legajo" 
+        [paginator]="true"
+        [rows]="10"
+        [tableStyle]="{'table-layout':'auto'}"
+        [immutable]="false"
+        emptyMessage="No hay Postulantes"
+        *ngIf="!alumnos"
+    >
+    <p-header>Lista de Postulantes</p-header>
+        <p-column header="Legajo" [filter]="true" filterPlaceholder="Buscar" filterMatchMode="contains"></p-column>
+        <p-column header="Nombre" [filter]="true" filterPlaceholder="Buscar" filterMatchMode="contains"></p-column>
+        <p-column header="Apellido" [filter]="true" filterPlaceholder="Buscar" filterMatchMode="contains"></p-column>
+        <p-column header="Nota Examen" [style]="{'width':'90px'}"></p-column>
+    </p-dataTable>
+    <p-dataTable [value]="alumnos"
+                sortField="legajo" 
+                [paginator]="true"
+                [rows]="10"
+                [tableStyle]="{'table-layout':'auto'}"
+                [immutable]="false"
+                emptyMessage="No hay Postulantes"
+                *ngIf="alumnos">
+        <p-header [style]="{'width': '100%'}">
+            <div class="ui-helper-clearfix"><strong>Lista de Alumnos</strong></div>
+            <div class="ui-helper-clearfix"><strong>Curso: </strong>{{nivel}} {{selectedAnio}}</div>
+            <div class="ui-helper-clearfix"><strong>Materia: </strong>{{selectedExamen.materia.nombre}}</div>
+            <div class="ui-helper-clearfix"><strong>Fecha Examen: </strong> {{selectedExamen.fecha | date:'dd/MM/yy'}}</div>
+        </p-header>
+        <p-column field="legajo" header="Legajo"></p-column>
+        <p-column field="nombre" header="Nombre"></p-column>
+        <p-column field="apellido" header="Apellido"></p-column>
+        <p-column field="nota" header="Nota" [style]="{'width':'90px'}">
+            <ng-template let-row="rowData" pTemplate="body">
+                <div *ngIf="row.estadoPostulante.boletinIngreso.curso._id == selectedCurso._id">
+                    <div *ngFor="let resultado of row.estadoPostulante.boletinIngreso.resultadosExamenIngreso">
+                        <div *ngIf="resultado.examenIngreso._id == selectedExamen._id">
+                            <div>
+                                <input name="nota" type="number" step="0.5" (change)="cambiando()"
+                                [ngClass]="{ 'tiene-error': resultado.nota && !notaValida(resultado.nota)}" 
+                                [(ngModel)]="resultado.nota" #nota="ngModel">
+                            </div>
+                        </div>
+                    </div>
+                 </div>
+            </ng-template>
+        </p-column>
+    </p-dataTable>
+    <br>
+    <div class="btn-group" role="group" aria-label="Basic example" style="float: right;">
+        <div class="btn-group mr-2">
+            <button
+                *ngIf="!hayCambios"
+                pButton
+                disabled
+                icon="fa fa-check"
+                class="ui-button-success"
+                type="button"
+                label="Guardar Cambios"
+            >
+            </button>
+            <button
+                *ngIf="hayCambios"
+                pButton
+                icon="fa fa-check"
+                class="ui-button-success"
+                type="button"
+                label="Guardar Cambios"
+                (click)="guardarNotas()"
+            >
+            </button>
+        </div>
+        <div class="btn-group mr-2">
+            <button
+                pButton
+                icon="fa fa-times"
+                class="ui-button-danger"
+                type="button"
+                label="Salir"
+                (click)="goBack()"
+            >
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Agregar Linea en Adenda-->
+<div class="modal fade" id="modalNotas" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" *ngIf="selectedAlumno">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="myModalLabel">Editar Calificaciones</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"  #closeBtn >&times;</button>
+                </div>
+                <form name="form" (ngSubmit)="f.form.valid" #f="ngForm" novalidate>
+                    <div class="modal-body">
+                        <div class="form-group">
+                                <input disabled id="disabledInput" placeholder="{{selectedAlumno.legajo}}" class="form-control">
+                        </div>
+                            
+                        <div class="form-group">
+                            <input disabled placeholder="{{selectedAlumno.nombre}}" class="form-control">
+                        </div>
+
+                        <div class="form-group">
+                            <input disabled placeholder="{{selectedAlumno.apellido}}" class="form-control">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="plantaNombre">Nota Examen:</label>
+                            <input type="number" class="form-control" name="nota" [(ngModel)]="model.nota" #nota="ngModel"/>
+                        </div>
+                    </div>
+        
+                    <div class="modal-footer">
+                        <button
+                            class="ui-button-success" 
+                            label="Aceptar" 
+                            pButton
+                            data-dismiss="modal"
+                            type="submit"
+                            icon="fa fa-plus"
+                            (click)="updateNota(nota.value,f)">
+                        </button>
+                    </div>
+    
+                </form>
+    
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+    <!-- /.modal -->

@@ -1,0 +1,183 @@
+<div class="panel panel-default">
+    <h4>Cargar Calificaciones de Cursos</h4>
+    <!--####################################### SELECCIONAR AÑO ESCOLAR ###################################-->
+    <div>
+        <label>Año Escolar: </label>
+        <br>
+        <p-dropdown [options]="anios" [(ngModel)]="selectedAnio" (onChange)="getCursos()"></p-dropdown>
+    </div>
+    <br>
+    <!--####################################### SELECCIONAR CURSO ###################################-->
+    <div *ngIf="cursos==null">
+        <label>Seleccione un curso: </label>
+        <br>
+        <p-dataTable [value]="cursos" 
+                    selectionMode="single" 
+                    [(selection)]="selectedCurso" 
+                    emptyMessage="Debe seleccionar un año escolar.">
+            <p-column header="Cursos"></p-column>
+        </p-dataTable>
+    </div>
+    <div *ngIf="cursos!=null">
+        <label>Seleccione un curso: </label>
+        <br>
+        <p-dataTable [value]="cursos" selectionMode="single" [(selection)]="selectedCurso" 
+                    rowGroupMode="subheader" 
+                    groupField="nivel.nombre"
+                    expandableRowGroups="true"
+                    [sortableRowGroup]="false"
+                    rowExpandMode="single" expandableRows="true"
+                    (onRowSelect)="getMaterias()">
+            <ng-template pTemplate="rowgroupheader" let-rowData>{{rowData.nivel.nombre}}</ng-template>
+            <p-column field="division" header="Cursos"></p-column>
+        </p-dataTable>
+    </div>
+    <br>
+    <!--####################################### SELECCIONAR MATERIA ###################################-->
+    <div *ngIf="materias==null">
+        <label>Materia: </label>
+        <br>
+        <p-dataTable [value]="materias" 
+                    emptyMessage="Debe seleccionar un curso.">
+            <p-column header="Materias"></p-column>
+        </p-dataTable>
+    </div>
+    <div *ngIf="materias!=null">
+        <label>Seleccione una materia: </label>
+        <br>
+        <p-dataTable [value]="materias" selectionMode="single" [(selection)]="selectedMateria" 
+                    (onRowSelect)="getAlumnos()">
+            <p-column field="nombre" header="Materias"></p-column>
+        </p-dataTable>
+    </div>
+    
+    <br>
+    <p-dataTable [value]="alumnos"
+                sortField="legajo" 
+                [paginator]="true"
+                [rows]="10"
+                [tableStyle]="{'table-layout':'auto'}"
+                [immutable]="false"
+                emptyMessage="No hay alumnos"
+                *ngIf="!alumnos">
+        <p-header [style]="{'width': '100%'}">
+            <div class="ui-helper-clearfix"><strong>Lista de Alumnos</strong></div>
+        </p-header>
+        <p-column header="Legajo" [filter]="true" filterPlaceholder="Buscar" filterMatchMode="contains"></p-column>
+        <p-column header="Nombre" [filter]="true" filterPlaceholder="Buscar" filterMatchMode="contains"></p-column>
+        <p-column header="Apellido" [filter]="true" filterPlaceholder="Buscar" filterMatchMode="contains"></p-column>
+        <p-column header="Primer Trimestre" [style]="{'width':'90px'}"></p-column>
+        <p-column header="Segundo Trimestre" [style]="{'width':'90px'}"></p-column>
+        <p-column header="Tercer Trimestre" [style]="{'width':'90px'}"></p-column>
+    </p-dataTable>
+    <p-dataTable [value]="alumnos"
+                sortField="legajo" 
+                [paginator]="true"
+                [rows]="10"
+                [tableStyle]="{'table-layout':'auto'}"
+                [immutable]="false"
+                emptyMessage="No hay alumnos"
+                *ngIf="alumnos">
+        <p-header [style]="{'width': '100%'}">
+            <div class="ui-helper-clearfix"><strong>Lista de Alumnos</strong></div>
+            <div class="ui-helper-clearfix"><strong>Curso: </strong>{{nivel}} {{division}} {{selectedAnio}}</div>
+            <div class="ui-helper-clearfix"><strong>Materia: </strong>{{selectedMateria.nombre}}</div>
+        </p-header>
+        <p-column field="legajo" header="Legajo" [filter]="true" filterPlaceholder="Buscar" filterMatchMode="contains"></p-column>
+        <p-column field="nombre" header="Nombre" [filter]="true" filterPlaceholder="Buscar" filterMatchMode="contains"></p-column>
+        <p-column field="apellido" header="Apellido" [filter]="true" filterPlaceholder="Buscar" filterMatchMode="contains"></p-column>
+        <p-column field="nota1" header="Primer Trimestre" [style]="{'width':'90px'}">
+            <ng-template let-row="rowData" pTemplate="body">
+                 <div *ngFor="let boletin of row.estadoAdmitido.boletines">
+                    <div *ngIf="boletin.curso._id == selectedCurso._id">
+                        <div *ngFor="let resultado of boletin.resultadosMateria">
+                            <div *ngIf="resultado.materia._id == selectedMateria._id">
+                                <div>
+                                    <input name="notaT3" type="number" step="0.5" (change)="cambiando(row)"
+                                    [ngClass]="{ 'tiene-error': resultado.notaTrimestre1 && !notaValida(resultado.notaTrimestre1)}" 
+                                    [(ngModel)]="resultado.notaTrimestre1" #notaT3="ngModel">
+                                </div>
+                            </div>
+                         </div>
+                    </div>
+                 </div>
+            </ng-template>
+        </p-column>
+        <p-column field="nota2" header="Segundo Trimestre" [style]="{'width':'90px'}">
+            <ng-template let-row="rowData" pTemplate="body">
+                <div *ngFor="let boletin of row.estadoAdmitido.boletines">
+                    <div *ngIf="boletin.curso._id == selectedCurso._id">
+                        <div *ngFor="let resultado of boletin.resultadosMateria">
+                            <div *ngIf="resultado.materia._id == selectedMateria._id">
+                                <div *ngIf="resultado.notaTrimestre1 && notaValida(resultado.notaTrimestre1)">
+                                    <input name="notaT3" type="number" step="0.5"
+                                    [ngClass]="{ 'tiene-error': resultado.notaTrimestre2 && !notaValida(resultado.notaTrimestre2)}" 
+                                    [(ngModel)]="resultado.notaTrimestre2" #notaT3="ngModel">
+                                </div>
+                                <div *ngIf="!resultado.notaTrimestre1 || !notaValida(resultado.notaTrimestre1)">
+                                    <input (change)="cambiando()" name="notaT3" type="number" disabled [(ngModel)]="resultado.notaTrimestre2" #notaT3="ngModel">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </ng-template>
+        </p-column>
+        <p-column field="nota3" header="Tercer Trimestre" [style]="{'width':'90px'}">
+            <ng-template let-row="rowData" pTemplate="body">
+                <div *ngFor="let boletin of row.estadoAdmitido.boletines">
+                    <div *ngIf="boletin.curso._id == selectedCurso._id">
+                        <div *ngFor="let resultado of boletin.resultadosMateria">
+                            <div *ngIf="resultado.materia._id == selectedMateria._id">
+                                <div *ngIf="resultado.notaTrimestre2 && notaValida(resultado.notaTrimestre2)">
+                                    <input name="notaT3" type="number" step="0.5"
+                                    [ngClass]="{ 'tiene-error': resultado.notaTrimestre3 && !notaValida(resultado.notaTrimestre3)}" 
+                                    [(ngModel)]="resultado.notaTrimestre3" #notaT3="ngModel">
+                                </div>
+                                <div *ngIf="!resultado.notaTrimestre2 || !notaValida(resultado.notaTrimestre2)">
+                                    <input (change)="cambiando()" name="notaT3" type="number" disabled [(ngModel)]="resultado.notaTrimestre3" #notaT3="ngModel">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </ng-template>
+        </p-column>
+        </p-dataTable>
+        <br>
+        <div class="btn-group" role="group" aria-label="Basic example" style="float: right;">
+            <div class="btn-group mr-2">
+                <button
+                    *ngIf="!hayCambios"
+                    pButton
+                    disabled
+                    icon="fa fa-check"
+                    class="ui-button-success"
+                    type="button"
+                    label="Guardar Cambios"
+                >
+                </button>
+                <button
+                    *ngIf="hayCambios"
+                    pButton
+                    icon="fa fa-check"
+                    class="ui-button-success"
+                    type="button"
+                    label="Guardar Cambios"
+                    (click)="guardarNotas()"
+                >
+                </button>
+            </div>
+            <div class="btn-group mr-2">
+                <button
+                    pButton
+                    icon="fa fa-times"
+                    class="ui-button-danger"
+                    type="button"
+                    label="Salir"
+                    (click)="goBack()"
+                >
+                </button>
+            </div>
+        </div>
+</div>
